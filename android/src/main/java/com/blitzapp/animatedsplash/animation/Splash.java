@@ -43,6 +43,7 @@ public class Splash {
     public static final String SLIDE = "SLIDE_ANIMATION";
     public static final String ROTATE = "ROTATE_ANIMATION";
     public static final String SCALE = "SCALE_ANIMATION";
+    public static final String FADE = "FADE_ANIMATION";
     public static final String DIALOGSLIDEDOWN = "SLIDEDOWN";
     public static final String DIALOGSLIDELEFT = "SLIDELEFT";
     public static final String DIALOGSLIDERIGHT = "SLIDERIGHT";
@@ -156,16 +157,16 @@ public class Splash {
     }
 
 
-    public static void animateSingleObject(CreateImageObject object, String typeofanimation, int duration, float rotateStartDegree, float rotateEndDegree, boolean isLastObject) {
+    public static void animateSingleObject(CreateImageObject object, String typeofanimation, int duration, float fromValue, float toValue, boolean isLastObject) {
         priority++;
         AddGroupObject.groupCount = priority;
-        animatedObjectList.add(new AnimateObject(object, typeofanimation, duration, rotateStartDegree, rotateEndDegree, isLastObject, priority));
+        animatedObjectList.add(new AnimateObject(object, typeofanimation, duration, fromValue, toValue, isLastObject, priority));
 
     }
 
-    public static void animateObject(CreateImageObject object, String typeofanimation, int duration, float rotateStartDegree, float rotateEndDegree, boolean isLastObject, int groupCount) {
+    public static void animateObject(CreateImageObject object, String typeofanimation, int duration, float fromValue, float toValue, boolean isLastObject, int groupCount) {
         priority = groupCount;
-        animatedObjectList.add(new AnimateObject(object, typeofanimation, duration, rotateStartDegree, rotateEndDegree, isLastObject, priority));
+        animatedObjectList.add(new AnimateObject(object, typeofanimation, duration, fromValue, toValue, isLastObject, priority));
 
     }
     public static void animateObjectOnHide(CreateImageObject object, String typeofanimation, int duration, float fromXDelta, float toXDelta, float fromYDelta, float toYDelta) {
@@ -174,10 +175,10 @@ public class Splash {
         hideanimatedObjectList.add(new AnimateObject(object, typeofanimation, duration, fromXDelta, toXDelta, fromYDelta, toYDelta));
 
     }
-    public static void animateObjectOnHide(CreateImageObject object, String typeofanimation, int duration, float rotateStartDegree, float rotateEndDegree) {
+    public static void animateObjectOnHide(CreateImageObject object, String typeofanimation, int duration, float fromValue, float toValue) {
         isHideOnDialogAnimation=true;
 
-        hideanimatedObjectList.add(new AnimateObject(object, typeofanimation, duration, rotateStartDegree, rotateEndDegree));
+        hideanimatedObjectList.add(new AnimateObject(object, typeofanimation, duration, fromValue, toValue));
 
 
     }
@@ -229,6 +230,9 @@ public class Splash {
             case SCALE:
                 animation.scaleAnimation(object, nextObject,isLasObject);
                 break;
+            case FADE:
+                animation.fadeAnimation(object, nextObject,isLasObject);
+                break;
         }
     }
     public static void runSpecificAnimation(CreateImageObject object, String animationType, AnimateObject animation, Boolean isTypeHide) {
@@ -241,6 +245,9 @@ public class Splash {
                 break;
             case SCALE:
                 animation.scaleAnimation(object);
+                break;
+            case FADE:
+                animation.fadeAnimation(object);
                 break;
         }
     }

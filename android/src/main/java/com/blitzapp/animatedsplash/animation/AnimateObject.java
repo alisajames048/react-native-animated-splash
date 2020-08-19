@@ -6,7 +6,9 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
+import android.view.animation.DecelerateInterpolator;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 
@@ -43,8 +45,8 @@ public class AnimateObject {
     private int priority;
     public boolean isLastObject;
     // for rotate animation
-    private float rotateStartDegree;
-    private float rotateEndDegree;
+    private float startFromValue;
+    private float endToValue;
     private View animationView;
 
     // For translate animation
@@ -73,14 +75,13 @@ public class AnimateObject {
         this.object = object;
     }
 
-
     // For rotate animation
-    public AnimateObject(CreateImageObject object, String animationType, int animationDuration, float rotateStartDegree, float rotateEndDegree,boolean isLastObject, int priority) {
+    public AnimateObject(CreateImageObject object, String animationType, int animationDuration, float fromValue, float toValue, boolean isLastObject, int priority) {
         this.animationType = animationType;
         this.animationDuration = animationDuration;
         this.setFillAfter = true;
-        this.rotateStartDegree = rotateStartDegree;
-        this.rotateEndDegree = rotateEndDegree;
+        this.startFromValue = fromValue;
+        this.endToValue = toValue;
         this.priority = priority;
         this.object = object;
         this.isLastObject = isLastObject;
@@ -89,15 +90,14 @@ public class AnimateObject {
 
 
     // For rotate animation
-    public AnimateObject(CreateImageObject object, String animationType, int animationDuration, float rotateStartDegree, float rotateEndDegree) {
+    public AnimateObject(CreateImageObject object, String animationType, int animationDuration, float fromValue, float toValue) {
         this.animationType = animationType;
         this.animationDuration = animationDuration;
         this.setFillAfter = true;
-        this.rotateStartDegree = rotateStartDegree;
-        this.rotateEndDegree = rotateEndDegree;
+        this.startFromValue = fromValue;
+        this.endToValue = toValue;
         this.object = object;
     }
-
     public CreateImageObject getNextObject() {
         return nextObject;
     }
@@ -160,11 +160,11 @@ public class AnimateObject {
     }
 
     public float getRotateStartDegree() {
-        return rotateStartDegree;
+        return startFromValue;
     }
 
     public float getRotateEndDegree() {
-        return rotateEndDegree;
+        return endToValue;
     }
 
     public void slideAnimation(CreateImageObject object, final CreateImageObject nextObject, Boolean last) {
@@ -264,7 +264,7 @@ public class AnimateObject {
     }
     public void rotateAnimation(CreateImageObject object) {
         View view = object.getImageView();
-        ObjectAnimator rotation = ObjectAnimator.ofFloat(view, View.ROTATION, rotateStartDegree, rotateEndDegree);
+        ObjectAnimator rotation = ObjectAnimator.ofFloat(view, View.ROTATION, startFromValue, endToValue);
         rotation.setDuration(animationDuration);
         view.setVisibility(View.VISIBLE);
         rotation.start();
@@ -275,6 +275,35 @@ public class AnimateObject {
                 Splash.dismissDialog();
             }
         });
+    }
+    public void fadeAnimation(CreateImageObject object) {
+
+        View view = object.getImageView();
+        Animation fadeIn = new AlphaAnimation(startFromValue, endToValue);
+        fadeIn.setInterpolator(new DecelerateInterpolator()); //add this
+        fadeIn.setDuration(animationDuration);
+        fadeIn.setFillAfter(setFillAfter);
+        view.setVisibility(View.VISIBLE);
+        view.startAnimation(fadeIn);
+        fadeIn.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                Splash.dismissDialog();
+
+            }
+
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+
     }
     public void scaleAnimation(CreateImageObject object) {
         View view = object.getImageView();
@@ -302,9 +331,76 @@ public class AnimateObject {
             }
         });
     }
+
+    public void fadeAnimation(CreateImageObject object, final CreateImageObject nextObject, Boolean last) {
+
+        View view = object.getImageView();
+        Animation fadeIn = new AlphaAnimation(startFromValue, endToValue);
+        fadeIn.setInterpolator(new DecelerateInterpolator()); //add this
+        fadeIn.setDuration(animationDuration);
+        fadeIn.setFillAfter(setFillAfter);
+        view.setVisibility(View.VISIBLE);
+        view.startAnimation(fadeIn);
+        final boolean isLastObject = last;
+
+        fadeIn.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                Log.d(TAG, "shouldHide slide: " + counter + "length");
+
+                if (nextObject != null && counter < animateObjectLength) {
+
+                    Log.d(TAG, "onAnimationEnd slide: " + nextObject);
+
+
+                    runAnimation();
+//                    counter++;
+
+
+                } else {
+
+                    Log.d(TAG, "shouldHide slide:" + isLastObject);
+                    if (isLastObject) {
+                        shouldHide = true;
+                        if (jsCalled == true) {
+
+                            if (savedReactContext != null) {
+                                mHandler.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        animationhide(savedReactContext);
+
+                                    }
+                                }, Splash.hideDelay);
+                            } else return;
+
+                        } else {
+                            counter++;
+
+                            return;
+                        }
+
+                    }
+                }
+
+            }
+
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+
+    }
     public void rotateAnimation(CreateImageObject object, final CreateImageObject nextObject, Boolean last) {
         View view = object.getImageView();
-        ObjectAnimator rotation = ObjectAnimator.ofFloat(view, View.ROTATION, rotateStartDegree, rotateEndDegree);
+        ObjectAnimator rotation = ObjectAnimator.ofFloat(view, View.ROTATION, startFromValue, endToValue);
         rotation.setDuration(animationDuration);
         view.setVisibility(View.VISIBLE);
         rotation.start();
